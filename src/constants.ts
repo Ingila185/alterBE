@@ -5,3 +5,7 @@ export enum GRIDSIZE {
 export enum ALPHABET {
   ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyz',
 }
+
+export enum BAIS_FACTOR {
+  FACTOR = 0.2,
+}

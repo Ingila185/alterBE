@@ -1,18 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { IGridGeneratorResponse } from './common/interfaces/GridGeneratorResponse';
-import { ALPHABET, GRIDSIZE } from './constants';
+import { ALPHABET, BAIS_FACTOR, GRIDSIZE } from './constants';
 
 @Injectable()
 export class AppService {
-  getGridGeneratorResponse(): IGridGeneratorResponse {
+  getGridGeneratorResponse(bias?: string): IGridGeneratorResponse {
     const alphabet = ALPHABET.ALLOWED_CHARACTERS;
     const matrix: string[][] = [];
+    const totalCells = GRIDSIZE.MAX_ROWS * GRIDSIZE.MAX_COLUMNS;
+    const biasCount = Math.floor(totalCells * BAIS_FACTOR.FACTOR); // 20% of total cells
 
+    // Create array of all possible positions
+    const positions = Array.from({ length: totalCells }, (_, i) => i);
+
+    // Randomly select positions for bias character
+    const biasPositions = new Set<number>();
+    if (bias) {
+      for (let i = 0; i < biasCount; i++) {
+        const randomIndex = Math.floor(Math.random() * positions.length);
+        biasPositions.add(positions[randomIndex]);
+        positions.splice(randomIndex, 1);
+      }
+    }
+
+    // Fill the matrix
     for (let i = 0; i < GRIDSIZE.MAX_ROWS; i++) {
       const row: string[] = [];
       for (let j = 0; j < GRIDSIZE.MAX_COLUMNS; j++) {
-        const randomIndex = Math.floor(Math.random() * alphabet.length);
-        row.push(alphabet[randomIndex]);
+        const position = i * GRIDSIZE.MAX_COLUMNS + j;
+        if (bias && biasPositions.has(position)) {
+          row.push(bias);
+        } else {
+          const randomIndex = Math.floor(Math.random() * alphabet.length);
+          row.push(alphabet[randomIndex]);
+        }
       }
       matrix.push(row);
     }
