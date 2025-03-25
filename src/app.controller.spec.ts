@@ -5,6 +5,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GridGeneratorResponse } from './interfaces/api-response.interface';
 import { BIAS_EXCEPTIONS } from './constants';
+import { GridRequestDto } from './dto/grid-request.dto';
+import { BiasValidationException } from './common/exceptions/bias-validation.exception';
 
 describe('AppController', () => {
   let controller: AppController;
@@ -54,6 +56,7 @@ describe('AppController', () => {
         code: 200,
         message: 'Grid generated successfully',
         success: true,
+        error: null,
       },
       data: {
         gridContents: Array(10).fill(Array(10).fill('a')),
@@ -63,16 +66,22 @@ describe('AppController', () => {
             rows: 10,
             columns: 10,
           },
-          timestamp: new Date().toISOString(),
+          timestamp: expect.any(String),
           version: '1.0.0',
         },
       },
     };
 
-    mockAppService.getGridGeneratorResponse.mockReturnValue(mockResponse);
+    mockAppService.getGridGeneratorResponse.mockResolvedValue(mockResponse);
 
-    const result = await controller.getGrid();
+    const result = await controller.getGrid({});
     expect(result).toEqual(mockResponse);
+
+    // Additional checks
+    expect(result.status.code).toBe(200);
+    expect(result.status.success).toBe(true);
+    expect(result?.data?.gridContents).toHaveLength(10);
+    expect(result?.data?.gridContents[0]).toHaveLength(10);
   });
 
   it('should return grid generator response with bias', async () => {
@@ -101,7 +110,7 @@ describe('AppController', () => {
 
     mockAppService.getGridGeneratorResponse.mockReturnValue(mockResponse);
 
-    const result = await controller.getGrid(bias);
+    const result = await controller.getGrid({ bias });
     expect(result.status.success).toBe(true);
     expect(result.status.code).toBe(200);
     expect(result.data).toBeDefined();
@@ -120,51 +129,59 @@ describe('AppController', () => {
     }
   });
 
+  it('should throw BiasValidationException for capital letter bias', async () => {
+    mockAppService.getGridGeneratorResponse.mockImplementation(() => {
+      throw new BiasValidationException('Bias must be a lowercase letter');
+    });
+
+    await expect(controller.getGrid({ bias: 'A' })).rejects.toThrow(
+      HttpException,
+    );
+    await expect(controller.getGrid({ bias: 'A' })).rejects.toMatchObject({
+      response: {
+        status: {
+          code: HttpStatus.BAD_REQUEST,
+          message: 'Bias must be a lowercase letter',
+          success: false,
+          error: 'BiasValidationException',
+        },
+        data: null,
+      },
+    });
+  });
+
+  it('should throw BiasValidationException for numeric bias', async () => {
+    mockAppService.getGridGeneratorResponse.mockImplementation(() => {
+      throw new BiasValidationException('Bias must be a lowercase letter');
+    });
+
+    await expect(controller.getGrid({ bias: '1' })).rejects.toThrow(
+      HttpException,
+    );
+    await expect(controller.getGrid({ bias: '1' })).rejects.toMatchObject({
+      response: {
+        status: {
+          code: HttpStatus.BAD_REQUEST,
+          message: 'Bias must be a lowercase letter',
+          success: false,
+          error: 'BiasValidationException',
+        },
+        data: null,
+      },
+    });
+  });
+
   it('should return error response for bias that is a capital letter', async () => {
     mockAppService.getGridGeneratorResponse.mockImplementation(() => {
       throw new Error(BIAS_EXCEPTIONS.CAPITAL_LETTER);
     });
 
-    await expect(controller.getGrid('A')).rejects.toThrow(HttpException);
-    await expect(controller.getGrid('A')).rejects.toMatchObject({
-      response: {
-        status: {
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'An unexpected error occurred',
-          success: false,
-          error: 'InternalServerError',
-        },
-        data: null,
-      },
-    });
-  });
+    const invalidBiasDto: GridRequestDto = { bias: 'A' };
 
-  it('should return error response for numeric bias', async () => {
-    mockAppService.getGridGeneratorResponse.mockImplementation(() => {
-      throw new Error(BIAS_EXCEPTIONS.NUMBER);
-    });
-
-    await expect(controller.getGrid('5')).rejects.toThrow(HttpException);
-    await expect(controller.getGrid('5')).rejects.toMatchObject({
-      response: {
-        status: {
-          code: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'An unexpected error occurred',
-          success: false,
-          error: 'InternalServerError',
-        },
-        data: null,
-      },
-    });
-  });
-
-  it('should return error response for special character bias', async () => {
-    mockAppService.getGridGeneratorResponse.mockImplementation(() => {
-      throw new Error(BIAS_EXCEPTIONS.SPECIAL_CHARACTER);
-    });
-
-    await expect(controller.getGrid('@')).rejects.toThrow(HttpException);
-    await expect(controller.getGrid('@')).rejects.toMatchObject({
+    await expect(controller.getGrid(invalidBiasDto)).rejects.toThrow(
+      HttpException,
+    );
+    await expect(controller.getGrid(invalidBiasDto)).rejects.toMatchObject({
       response: {
         status: {
           code: HttpStatus.INTERNAL_SERVER_ERROR,

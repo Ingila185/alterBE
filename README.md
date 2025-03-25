@@ -52,6 +52,9 @@ Generates a random alphabet grid.
 **Query Parameters:**
 
 - `bias` (optional): A single lowercase letter to bias the grid generation
+  - Must be a single lowercase letter (a-z)
+  - Cannot be empty, a number, or a special character
+  - Example: `x`
 
 **Example Requests:**
 
@@ -88,6 +91,37 @@ GET http://localhost:3000/grid?bias=x
   }
 }
 ```
+
+## API Documentation
+
+The API documentation is available through Swagger UI at `/api` endpoint when the server is running:
+
+```bash
+http://localhost:3000/api
+```
+
+The Swagger documentation includes:
+
+- Detailed endpoint descriptions
+- Request/response schemas
+- Example requests and responses
+- Validation rules
+- Error responses
+
+## Data Validation
+
+The API uses DTOs (Data Transfer Objects) for input validation:
+
+1. Request Validation:
+
+   - Validates query parameters
+   - Ensures bias is a single lowercase letter
+   - Automatically transforms input data
+
+2. Response Validation:
+   - Ensures consistent response structure
+   - Validates all required fields
+   - Provides type safety
 
 ## Project Setup
 
@@ -147,7 +181,7 @@ To view the coverage report:
 
 ## Error Handling
 
-The API returns appropriate error responses for invalid bias inputs:
+The API returns appropriate error responses for invalid inputs:
 
 ```json
 {
@@ -160,6 +194,14 @@ The API returns appropriate error responses for invalid bias inputs:
   "data": null
 }
 ```
+
+Common error cases:
+
+- Invalid bias character (must be lowercase letter)
+- Empty bias parameter
+- Special characters in bias
+- Numbers in bias
+- Multi-character bias
 
 ## License
 

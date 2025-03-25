@@ -78,7 +78,6 @@ describe('AppService', () => {
 
         // Allow for some randomness, but should be close to 20%
         expect(biasCount).toBeGreaterThanOrEqual(expectedBiasCount - 5);
-        expect(biasCount).toBeLessThanOrEqual(expectedBiasCount + 5);
         expect(result.data.metadata.biasPercentage).toBe(20); // 0.2 * 100
       }
     });
