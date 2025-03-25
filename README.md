@@ -22,41 +22,152 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# Grid Generator API
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A NestJS-based API that generates random alphabet grids with optional character bias.
 
-## Project setup
+## Features
+
+- Generates 10x10 grids filled with random lowercase letters
+- Supports character bias to increase the frequency of a specific letter
+- Generates a unique grid code based on character counts and current time
+- Validates bias input for:
+  - Empty strings
+  - Capital letters
+  - Numbers
+  - Special characters
+  - Multi-character strings
+- Returns detailed metadata including:
+  - Grid dimensions
+  - Bias character and percentage (if applied)
+  - Timestamp
+  - Version
+
+## API Endpoints
+
+### GET /grid
+
+Generates a random alphabet grid.
+
+**Query Parameters:**
+
+- `bias` (optional): A single lowercase letter to bias the grid generation
+
+**Example Requests:**
 
 ```bash
-$ npm install
+# Generate random grid
+GET http://localhost:3000/grid
+
+# Generate grid with bias
+GET http://localhost:3000/grid?bias=x
 ```
 
-## Compile and run the project
+**Example Response:**
+
+```json
+{
+  "status": {
+    "code": 200,
+    "message": "Grid generated successfully",
+    "success": true
+  },
+  "data": {
+    "gridContents": [...],
+    "gridCode": 42,
+    "metadata": {
+      "dimensions": {
+        "rows": 10,
+        "columns": 10
+      },
+      "biasCharacter": "x",
+      "biasPercentage": 20,
+      "timestamp": "2024-03-21T12:34:56.789Z",
+      "version": "1.0.0"
+    }
+  }
+}
+```
+
+## Project Setup
 
 ```bash
-# development
-$ npm run start
+# Install dependencies
+$ npm install
 
-# watch mode
+# Start development server
 $ npm run start:dev
 
-# production mode
+# Build for production
+$ npm run build
+
+# Start production server
 $ npm run start:prod
 ```
 
-## Run tests
+## Testing
 
 ```bash
-# unit tests
+# Run unit tests
 $ npm run test
 
-# e2e tests
+# Run e2e tests
 $ npm run test:e2e
 
-# test coverage
+# Generate test coverage
 $ npm run test:cov
 ```
+
+### Code Coverage
+
+The project maintains comprehensive test coverage. After running the coverage report, you can find the detailed coverage information in the following formats:
+
+- HTML Report: `coverage/lcov-report/index.html`
+- JSON Report: `coverage/coverage-final.json`
+- LCOV Report: `coverage/lcov.info`
+- Clover XML: `coverage/clover.xml`
+
+#### Coverage Screenshots
+
+**Unit Tests Coverage:**
+![Unit Tests Coverage](test/coverage/screenshots/codeCoverageUnitTests.png)
+
+**E2E Tests Coverage:**
+![E2E Tests Coverage](test/coverage/screenshots/e2eTests.png)
+
+To view the coverage report:
+
+1. Run `npm run test:cov`
+2. Open `coverage/lcov-report/index.html` in your browser
+3. Navigate through the report to see:
+   - Overall coverage statistics
+   - File-by-file breakdown
+   - Line-by-line coverage details
+   - Branch coverage information
+
+## Error Handling
+
+The API returns appropriate error responses for invalid bias inputs:
+
+```json
+{
+  "status": {
+    "code": 400,
+    "message": "Error message",
+    "success": false,
+    "error": "BiasValidationException"
+  },
+  "data": null
+}
+```
+
+## License
+
+This project is MIT licensed.
+
+## Description
+
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Deployment
 
